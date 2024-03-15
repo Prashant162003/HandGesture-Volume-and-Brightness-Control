@@ -2,6 +2,9 @@ import cv2
 import mediapipe as mp
 import time
 import pyautogui
+from math import hypot
+import screen_brightness_control as sbc
+import numpy as np
 
 x1 = y1 = x2 = y2 = 0
 
@@ -22,11 +25,11 @@ while True:
     if hands:
         for hand in hands:
             drawing_utils.draw_landmarks(image, hand)
-            landmark = hand.landmark
+            landmark = hands[0].landmark
             for id, landmark in enumerate(landmark):
                 h, w, c = image.shape
                 cx, cy = int(landmark.x * w), int(landmark.y * h)
-                if id == 8: # Forefinger
+                if id == 8: # Indexfinger
                     cv2.circle(image, (cx,cy), 10, (255,0,255), cv2.FILLED)
                     x1 = cx
                     y1 = cy
@@ -34,7 +37,8 @@ while True:
                     cv2.circle(image, (cx,cy), 10, (255,0,255), cv2.FILLED)
                     x2 = cx
                     y2 = cy
-        dist = ((x2 - x1) ** 2 + (y2- y1) ** 2) ** (0.5) // 4 # Dividing by 4 because the distance between our two fingers ranges between (0 - 35)
+        dist = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** (0.5) // 4
+        # Dividing by 4 because the distance between our two fingers ranges between (0 - 35)
         cv2.line(image,(x1,y1), (x2,y2), (189,189,189), 5)
         if dist > 35:
              pyautogui.press("volumeup")
@@ -48,4 +52,5 @@ while True:
     cv2.putText(image, str(int(fps)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3,(255, 0, 255), 3)
 
     cv2.imshow("Image", image)
-    cv2.waitKey(1)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
